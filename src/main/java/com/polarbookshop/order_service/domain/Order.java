@@ -6,6 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Table("orders")
@@ -13,7 +14,7 @@ public record Order(
         @Id Long id,
         String bookIsbn,
         String bookName,
-        Double bookPrice,
+        BigDecimal bookPrice,
         Integer quantity,
         OrderStatus status,
 
@@ -26,7 +27,7 @@ public record Order(
         int version
 ) {
     public static Order of(
-            String bookIsbn, String bookName, Double bookPrice,
+            String bookIsbn, String bookName, BigDecimal bookPrice,
             Integer quantity, OrderStatus status
     ) {
         return new Order(

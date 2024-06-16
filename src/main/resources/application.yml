@@ -13,10 +13,10 @@ spring:
       max-create-connection-time: 2s
       initial-size: 5
       max-size: 10
-    flyway:
-      user: ${spring.r2dbc.username}
-      password: ${spring.r2dbc.password}
-      url: jdbc:postgresql://localhost:5432/polardb_order
+  flyway:
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    url: jdbc:postgresql://localhost:5432/polardb_order
 
 # configure tomcat server
 server:
@@ -25,3 +25,6 @@ server:
   netty:
     connection-timeout: 2s
     idle-timeout: 15s
+
+polar:
+  catalog-service-uri: "http://localhost:9001/"
