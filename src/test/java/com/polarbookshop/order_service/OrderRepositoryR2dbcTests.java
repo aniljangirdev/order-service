@@ -3,7 +3,8 @@ package com.polarbookshop.order_service;
 
 import com.polarbookshop.order_service.config.DataConfig;
 import com.polarbookshop.order_service.domain.OrderRepository;
-import org.junit.jupiter.api.Assertions;
+import com.polarbookshop.order_service.domain.OrderService;
+import com.polarbookshop.order_service.domain.OrderStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
@@ -14,6 +15,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import reactor.test.StepVerifier;
 
 @DataR2dbcTest
 @Import(DataConfig.class)
@@ -21,7 +23,8 @@ import org.testcontainers.utility.DockerImageName;
 public class OrderRepositoryR2dbcTests {
 
     @Container
-    private static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:14.4"));
+    private static final PostgreSQLContainer<?> postgreSQLContainer =
+            new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
 
     @Autowired
     private OrderRepository orderRepository;
@@ -29,7 +32,7 @@ public class OrderRepositoryR2dbcTests {
     @DynamicPropertySource
     private static void postgresqlProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("spring.r2dbc.url", OrderRepositoryR2dbcTests::r2dbcUrl);
-        dynamicPropertyRegistry.add("spring.r2dbc.username", postgreSQLContainer::getHost);
+        dynamicPropertyRegistry.add("spring.r2dbc.username", postgreSQLContainer::getUsername);
         dynamicPropertyRegistry.add("spring.r2dbc.password", postgreSQLContainer::getPassword);
         dynamicPropertyRegistry.add("spring.flyway.url", postgreSQLContainer::getJdbcUrl);
     }
@@ -43,7 +46,18 @@ public class OrderRepositoryR2dbcTests {
     }
 
     @Test
-    void test2() {
-        Assertions.assertTrue(postgreSQLContainer.isRunning());
+    void createRejectedOrder() {
+        // GIVEN
+        var bookIsbn = "1234567890";
+
+
+        // WHEN
+        var rejectedOrder = OrderService.buildRejectOrder(bookIsbn, 250);
+
+        // THEN
+        StepVerifier
+                .create(orderRepository.save(rejectedOrder))
+                .expectNextMatches(order -> order.bookIsbn().equals(bookIsbn) && order.status() == OrderStatus.REJECTED)
+                .verifyComplete();
     }
 }

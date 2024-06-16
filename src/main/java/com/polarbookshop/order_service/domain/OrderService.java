@@ -38,9 +38,7 @@ public class OrderService {
                 OrderStatus.ACCEPTED
         );
     }
-
-
-    private Order buildRejectOrder(String bookIsbn, int qty) {
+    public static Order buildRejectOrder(String bookIsbn, int qty) {
         return Order.of(
                 bookIsbn,
                 null,
