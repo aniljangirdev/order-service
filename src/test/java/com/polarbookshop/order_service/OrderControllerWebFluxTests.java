@@ -6,7 +6,6 @@ import com.polarbookshop.order_service.domain.OrderService;
 import com.polarbookshop.order_service.domain.OrderStatus;
 import com.polarbookshop.order_service.web.OrderRequest;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,6 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 
 @WebFluxTest(OrderController.class)
 public class OrderControllerWebFluxTests {
@@ -26,13 +26,14 @@ public class OrderControllerWebFluxTests {
 
     @Test
     void whenBookNotAvailableThenRejectOrder() {
+        // GIVEN
         var BOOK_ISBN = "1234567890";
-        OrderRequest orderRequest = new OrderRequest(BOOK_ISBN, 3);
+        var orderRequest = new OrderRequest(BOOK_ISBN, 3);
+        var expectedOrder = OrderService.buildRejectOrder(orderRequest.isbn(), orderRequest.quantity());
 
         // WHEN
-        Mono<Order> expectedOrder = orderService.submitOrder(orderRequest.isbn(), orderRequest.quantity());
-        BDDMockito.when(orderService.submitOrder(orderRequest.isbn(), orderRequest.quantity()))
-                .thenReturn(expectedOrder);
+        given(orderService.submitOrder(orderRequest.isbn(), orderRequest.quantity()))
+                .willReturn(Mono.just(expectedOrder));
 
         // THEN
         webTestClient
@@ -41,8 +42,7 @@ public class OrderControllerWebFluxTests {
                 .bodyValue(orderRequest)
                 .exchange()
                 .expectStatus().is2xxSuccessful()
-                .expectBody(Order.class)
-                .value(actualOrder -> {
+                .expectBody(Order.class).value(actualOrder -> {
                     assertThat(actualOrder).isNotNull();
                     assertThat(actualOrder.status()).isEqualTo(OrderStatus.REJECTED);
                 });
