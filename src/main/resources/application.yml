@@ -28,3 +28,9 @@ server:
 
 polar:
   catalog-service-uri: "http://localhost:9001/"
+
+springdoc:
+  version: 1.0.0
+  swagger-ui:
+    use-root-path: true
+  forward-headers-strategy: framework

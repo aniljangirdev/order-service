@@ -1,7 +1,7 @@
 # docker images
 FROM amazoncorretto:17
 
-WORKDIR workspace
+WORKDIR workspace.
 
 ARG JAR_FILE=build/libs/*.jar
 
